@@ -1,0 +1,48 @@
+#!/usr/bin/python
+
+from BeautifulSoup import BeautifulSoup
+from urllib import urlopen
+from feedformatter import Feed
+from json import loads, dumps
+from os.path import expanduser, exists
+from os import makedirs
+
+SIZE = 40
+FILES = "~/.config/hntoprss/"
+
+def get_db():
+    if not exists(expanduser(FILES)):
+        makedirs(expanduser(FILES))
+    if not exists(expanduser(FILES + "db.json")):
+        return {"feed": [], "ids": []}
+    return loads(open(expanduser(FILES + "db.json")).read())
+
+def save_db(db):
+    open(expanduser(FILES + "db.json"), "w").write(dumps(db, indent=4))
+
+if __name__ == "__main__":
+    db = get_db()
+    feed = Feed()
+    feed.feed["title"] = "Top HackerNews articles"
+    feed.feed["link"] = "http://news.ycombinator.com"
+    feed.feed["author"] = "Bram"
+    feed.feed["description"] = "A feed that contains the last articles of HackerNews that goes over 200"
+
+    soup = BeautifulSoup(urlopen("http://news.ycombinator.com").read())
+    items = filter(lambda x: not x.get("style"), soup('table')[2]('tr'))
+    for i in zip(items[::2], items[1::2]):
+        if i[1].span is None:
+            # advertissment
+            continue
+        points = int(i[1].span.text.split()[0])
+        title = i[0]('a')[-1].text
+        description = i[1]('a')[-1].text
+        link = i[1]('a')[-1]["href"]
+        if points > 200 and link not in db["ids"]:
+            db["feed"].append({"title": title, "link": "http://news.ycombinator.com/" + link, "guid": link})
+            db["ids"].append(link)
+
+    db["feed"] = db["feed"][-40:]
+    feed.items += db["feed"]
+    feed.format_rss2_file(expanduser(FILES + "rss.xml"))
+    save_db(db)
