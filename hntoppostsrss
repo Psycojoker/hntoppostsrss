@@ -39,7 +39,10 @@ if __name__ == "__main__":
         description = i[1]('a')[-1].text
         link = i[1]('a')[-1]["href"]
         if points > 200 and link not in db["ids"]:
-            db["feed"].append({"title": title, "link": "http://news.ycombinator.com/" + link, "guid": link})
+            db["feed"].append({"title": title,
+                               "link": "http://news.ycombinator.com/" + link,
+                               "description": '<p>%s</p>\n<p><a href="%s">HackerNews thread</a></p>' % (i[0]('a')[-1], "http://news.ycombinator.com/" + link),
+                               "guid": link})
             db["ids"].append(link)
 
     db["feed"] = db["feed"][-40:]
