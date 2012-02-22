@@ -41,7 +41,7 @@ if __name__ == "__main__":
         if points > 100 and link not in db["ids"]:
             db["feed"].append({"title": title.encode("Utf-8"),
                                "link": "http://news.ycombinator.com/" + link,
-                               "description": '<p>%s</p>\n<p><a href="%s">HackerNews thread</a></p>' % ("%s".encode("Utf-8") % i[0]('a')[-1], "http://news.ycombinator.com/" + link),
+                               "description": '<p>%s</p>\n<p><a href="%s">HackerNews thread</a></p>' % (i[0]('a')[-1].text.encode("Utf-8"), "http://news.ycombinator.com/" + link.encode("Utf-8")),
                                "guid": link})
             db["ids"].append(link)
 
